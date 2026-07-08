@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delta Green Tabletop Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f13;
+    --bg2:#17161c;
+    --panel:#1c1b22;
+    --border:#33313c;
+    --paper:#e9e3d1;
+    --ink:#211f19;
+    --accent:#8a2323;
+    --accent-bright:#c23b3b;
+    --muted:#9a96a6;
+    --muted2:#6f6c7a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(140,40,40,0.08), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(80,80,120,0.06), transparent 55%),
+      var(--bg);
+    color:var(--paper);
+    font-family:'Courier Prime', monospace;
+    min-height:100vh;
+    padding:0 0 60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px;}
+
+  header{
+    padding:56px 0 28px;
+    text-align:center;
+  }
+  header .kicker{
+    font-family:'Special Elite', monospace;
+    font-size:11px;
+    letter-spacing:4px;
+    color:var(--accent-bright);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  header h1{
+    font-family:'Special Elite', monospace;
+    font-size:clamp(28px,6vw,46px);
+    letter-spacing:4px;
+    color:var(--paper);
+  }
+  header p{
+    margin-top:14px;
+    color:var(--muted);
+    font-size:14px;
+    max-width:560px;
+    margin-left:auto;
+    margin-right:auto;
+    line-height:1.6;
+  }
+  header .rule{
+    width:60px;
+    height:2px;
+    background:var(--accent);
+    margin:24px auto 0;
+  }
+
+  .cards{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    margin-top:36px;
+  }
+  @media (max-width:720px){
+    .cards{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:26px 26px 24px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+    transition:border-color .2s, transform .2s;
+  }
+  .card:hover{
+    border-color:var(--accent);
+    transform:translateY(-2px);
+  }
+  .card .tag{
+    font-family:'Special Elite', monospace;
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--accent-bright);
+    margin-bottom:10px;
+  }
+  .card h2{
+    font-family:'Special Elite', monospace;
+    font-size:20px;
+    letter-spacing:1px;
+    margin-bottom:10px;
+    color:var(--paper);
+  }
+  .card p.desc{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.6;
+    margin-bottom:16px;
+  }
+  .card ul{
+    list-style:none;
+    margin:0 0 22px;
+    padding:0;
+    flex:1;
+  }
+  .card ul li{
+    font-size:12.5px;
+    color:var(--muted);
+    padding:5px 0 5px 16px;
+    position:relative;
+    line-height:1.5;
+    border-bottom:1px dotted var(--border);
+  }
+  .card ul li:last-child{border-bottom:none;}
+  .card ul li::before{
+    content:"›";
+    position:absolute;
+    left:0;
+    color:var(--accent-bright);
+    font-weight:bold;
+  }
+  .card a.launch{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-family:'Special Elite', monospace;
+    letter-spacing:1px;
+    font-size:12px;
+    text-transform:uppercase;
+    text-decoration:none;
+    background:var(--accent);
+    color:var(--paper);
+    padding:12px 18px;
+    border-radius:6px;
+    transition:background .2s;
+    text-align:center;
+  }
+  .card a.launch:hover{background:var(--accent-bright);}
+  .card .glyph{
+    position:absolute;
+    top:-10px;
+    right:-6px;
+    font-size:80px;
+    opacity:0.06;
+    line-height:1;
+    user-select:none;
+  }
+
+  .note{
+    margin-top:40px;
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px 22px;
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.7;
+  }
+  .note h3{
+    font-family:'Special Elite', monospace;
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--paper);
+    margin-bottom:10px;
+  }
+  .note code{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:1px 5px;
+    color:var(--paper);
+    font-size:12px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:44px;
+    color:var(--muted2);
+    font-size:10.5px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Case Files &amp; Field Tools</div>
+    <h1>DELTA GREEN TABLETOP TOOLS</h1>
+    <p>Two browser-based utilities for running or playing Delta Green (or any percentile / d20 tabletop RPG). No installs, no accounts, no server — everything runs locally in your browser and saves to your device.</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="glyph">📋</div>
+      <div class="tag">Agent Documentation</div>
+      <h2>Character Sheet</h2>
+      <p class="desc">An interactive DD Form 315 — stats, derived attributes, sanity tracking, skills, bonds, equipment, and injuries, styled as a typewritten dossier.</p>
+      <ul>
+        <li>Manage multiple agents from one roster</li>
+        <li>Auto-calculated HP, WP, SAN &amp; Breaking Point</li>
+        <li>One-click post-session skill advancement rolls</li>
+        <li>Autosaves as you type</li>
+        <li>Export/import JSON, export to PDF</li>
+      </ul>
+      <a class="launch" href="delta-green-character-sheet.html">Open Character Sheet →</a>
+    </div>
+
+    <div class="card">
+      <div class="glyph">🎲</div>
+      <div class="tag">Session Tracking</div>
+      <h2>Dice Logger</h2>
+      <p class="desc">A manual roll log for tracking what happens at the table — organized by session, with running stats and a CSV export.</p>
+      <ul>
+        <li>Unlimited named sessions with history</li>
+        <li>Log dice count, modifier, total &amp; individual values</li>
+        <li>Auto-flags crits and fumbles on d20 rolls</li>
+        <li>Filter to misses only, edit or delete any entry</li>
+        <li>Per-session stats &amp; CSV export</li>
+      </ul>
+      <a class="launch" href="dice-logger.html">Open Dice Logger →</a>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <h3>How your data is stored</h3>
+    Both tools save everything to your browser's <code>localStorage</code> — nothing is uploaded anywhere. That means your data stays on whichever device and browser you use, and will disappear if that browser's storage is cleared. Use each tool's export feature (JSON for the character sheet, CSV for the dice logger) to keep backups or move data between devices.
+  </div>
+
+  <footer>Delta Green is a trademark of Arc Dream Publishing · Fan-made tools, unofficial</footer>
+
+</div>
+</body>
+</html>

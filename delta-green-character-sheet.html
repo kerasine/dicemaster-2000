@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELTA GREEN — Agent Documentation Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e9e3d1;
+    --paper-dark:#dcd4b9;
+    --ink:#211f19;
+    --panel-black:#15130f;
+    --panel-text:#e9e3d1;
+    --accent-red:#7c1f1f;
+    --accent-olive:#54502f;
+    --rule:#b7ac8a;
+    --muted:#786f57;
+    --stamp:#8a2323;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, rgba(0,0,0,0.05), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(0,0,0,0.06), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Courier Prime', monospace;
+    padding:0 0 80px;
+  }
+
+  .page{
+    max-width:980px;
+    margin:0 auto;
+    padding:24px 18px 0;
+  }
+
+  /* ---------- Header / stamp ---------- */
+  header.masthead{
+    background:var(--panel-black);
+    color:var(--panel-text);
+    padding:22px 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border:2px solid var(--ink);
+    position:relative;
+    overflow:hidden;
+  }
+  header.masthead h1{
+    font-family:'Special Elite', monospace;
+    letter-spacing:6px;
+    font-size:clamp(28px,5vw,46px);
+    margin:0;
+  }
+  header.masthead .subhead{
+    font-size:11px;
+    letter-spacing:2px;
+    color:var(--rule);
+    margin-top:4px;
+  }
+  .stamp-box{
+    font-family:'Special Elite', monospace;
+    border:3px solid var(--stamp);
+    color:var(--stamp);
+    padding:6px 12px;
+    transform:rotate(-6deg);
+    font-size:11px;
+    letter-spacing:1px;
+    text-align:center;
+    opacity:0.85;
+    white-space:nowrap;
+  }
+
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    background:var(--paper-dark);
+    border:2px solid var(--ink);
+    border-top:none;
+    padding:10px 14px;
+    align-items:center;
+    font-size:11px;
+  }
+  .toolbar button{
+    font-family:'Special Elite', monospace;
+    background:var(--panel-black);
+    color:var(--panel-text);
+    border:1px solid var(--ink);
+    padding:8px 12px;
+    cursor:pointer;
+    letter-spacing:1px;
+    font-size:11px;
+  }
+  .toolbar button:hover{background:var(--accent-olive);}
+  .toolbar button.danger{background:var(--accent-red);}
+  .toolbar button.danger:hover{background:#a02a2a;}
+  #saveStatus{margin-left:auto;color:var(--muted);font-style:italic;}
+  #importFile{display:none;}
+
+  /* ---------- Character manager bar ---------- */
+  .char-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    background:var(--accent-olive);
+    color:var(--panel-text);
+    border:2px solid var(--ink);
+    border-top:none;
+    padding:10px 14px;
+    font-size:11px;
+  }
+  .char-bar label{letter-spacing:1px; font-family:'Special Elite', monospace; font-size:10px;}
+  .char-bar select{
+    font-family:'Courier Prime', monospace;
+    background:#fbf8ee;
+    border:1px solid var(--rule);
+    padding:6px 8px;
+    font-size:12px;
+    min-width:200px;
+    max-width:280px;
+  }
+  .char-bar button{
+    font-family:'Special Elite', monospace;
+    background:var(--panel-black);
+    color:var(--panel-text);
+    border:1px solid var(--ink);
+    padding:8px 12px;
+    cursor:pointer;
+    letter-spacing:1px;
+    font-size:11px;
+  }
+  .char-bar button:hover{background:var(--accent-red);}
+  .char-bar button.danger:hover{background:#a02a2a;}
+
+  /* ---------- Section shell (dossier-tab look) ---------- */
+  section.block{
+    display:grid;
+    grid-template-columns:34px 1fr;
+    border:2px solid var(--ink);
+    border-top:none;
+  }
+  .tab{
+    background:var(--panel-black);
+    color:var(--panel-text);
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    font-family:'Special Elite', monospace;
+    letter-spacing:3px;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 0;
+  }
+  .content{padding:16px 18px;background:var(--paper);}
+
+  .field-label{
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--muted);
+    display:block;
+    margin-bottom:3px;
+  }
+  input[type=text], input[type=number], textarea, select{
+    font-family:'Courier Prime', monospace;
+    background:#fbf8ee;
+    border:1px solid var(--rule);
+    padding:6px 8px;
+    width:100%;
+    color:var(--ink);
+    font-size:13px;
+  }
+  input:focus, textarea:focus{outline:2px solid var(--accent-olive);}
+  textarea{resize:vertical;}
+
+  .row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px;}
+  .row > div{flex:1; min-width:140px;}
+  .row.tight > div{min-width:90px;}
+
+  /* Statistics table */
+  .stat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px 18px;}
+  .stat-line{
+    display:grid;
+    grid-template-columns:110px 60px 60px;
+    align-items:center;
+    gap:8px;
+    border-bottom:1px dashed var(--rule);
+    padding:6px 0;
+  }
+  .stat-line span.name{font-size:12px;}
+  .stat-line .pct{
+    font-family:'Special Elite', monospace;
+    text-align:center;
+    background:var(--paper-dark);
+    padding:4px 0;
+    font-size:12px;
+  }
+
+  .derived-grid{display:grid; grid-template-columns:1fr 90px 90px 40px; gap:6px; align-items:center; font-size:12px;}
+  .derived-grid .hdr{font-weight:bold; color:var(--muted); font-size:10px; letter-spacing:1px; text-transform:uppercase;}
+  .derived-grid input{text-align:center;}
+  .mini-btn{
+    font-family:'Special Elite', monospace;
+    background:var(--panel-black); color:var(--panel-text);
+    border:none; cursor:pointer; font-size:9px; padding:6px 4px; letter-spacing:0;
+  }
+  .mini-btn:hover{background:var(--accent-olive);}
+
+  /* Bonds */
+  #bondsTable{width:100%; border-collapse:collapse; font-size:12px;}
+  #bondsTable td{padding:3px; vertical-align:middle;}
+  #bondsTable input[type=number]{width:60px;}
+
+  /* Skills */
+  .skills-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:0 20px;}
+  .skill-row{
+    display:grid;
+    grid-template-columns:16px 1fr 55px;
+    align-items:center;
+    gap:6px;
+    padding:4px 0;
+    border-bottom:1px dotted var(--rule);
+    font-size:12px;
+  }
+  .skill-row input[type=checkbox]{width:15px; height:15px;}
+  .skill-row input[type=number]{width:50px; text-align:center; padding:3px 4px;}
+  .skill-row .sname{display:flex; flex-direction:column;}
+  .skill-row .spec{margin-top:2px; font-size:11px; padding:2px 4px;}
+  .other-skills{margin-top:14px;}
+  .other-skills .skill-row{grid-template-columns:16px 1fr 55px;}
+  .other-skills input[type=text]{font-size:12px; padding:3px 4px;}
+
+  /* Weapons table */
+  table.equip{width:100%; border-collapse:collapse; font-size:11px;}
+  table.equip th{
+    background:var(--panel-black); color:var(--panel-text);
+    font-weight:normal; font-family:'Special Elite', monospace;
+    padding:6px 4px; letter-spacing:0.5px; font-size:10px; text-transform:uppercase;
+  }
+  table.equip td{border:1px solid var(--rule); padding:2px;}
+  table.equip input{border:none; background:transparent; text-align:center; padding:5px 3px; font-size:11px;}
+  table.equip input.wname{text-align:left;}
+
+  .san-track{display:flex; gap:24px; flex-wrap:wrap; font-size:12px; margin-top:8px;}
+  .san-track .grp{display:flex; align-items:center; gap:6px;}
+  .san-track input[type=checkbox]{width:16px; height:16px;}
+  .san-track label.adapted{margin-left:8px; display:flex; align-items:center; gap:4px; font-style:italic; color:var(--muted);}
+
+  footer.sig{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    border:2px solid var(--ink);
+    border-top:none;
+    padding:14px 18px;
+    background:var(--panel-black);
+    color:var(--panel-text);
+  }
+  footer.sig .field-label{color:var(--rule);}
+  footer.sig input{background:#232019; color:var(--panel-text); border:1px solid var(--rule);}
+
+  .formcode{
+    text-align:center;
+    font-size:10px;
+    color:var(--muted);
+    padding:10px 0 0;
+    letter-spacing:1px;
+  }
+
+  .add-row-btn{
+    margin-top:6px;
+    font-family:'Special Elite', monospace;
+    background:none;
+    border:1px dashed var(--muted);
+    color:var(--muted);
+    padding:5px 10px;
+    cursor:pointer;
+    font-size:11px;
+  }
+  .add-row-btn:hover{color:var(--ink); border-color:var(--ink);}
+
+  h3.subhead2{
+    font-family:'Special Elite', monospace;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--accent-olive);
+    margin:0 0 8px;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:4px;
+  }
+
+  @media (max-width:640px){
+    .stat-grid{grid-template-columns:1fr;}
+    .skills-grid{grid-template-columns:1fr;}
+    footer.sig{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Print / PDF export ---------- */
+  @media print{
+    body{padding:0; background:white;}
+    .page{max-width:100%; padding:0 6px;}
+    .toolbar, .char-bar, .add-row-btn, .mini-btn, #advanceBtn, #importFile{display:none !important;}
+    header.masthead, footer.sig, section.block .tab{
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    section.block, footer.sig{break-inside:avoid;}
+    input, textarea, select{
+      border:1px solid #999 !important;
+      background:white !important;
+      color:#000 !important;
+      -webkit-print-color-adjust:exact;
+    }
+    input[readonly]{background:#f0ede2 !important;}
+    a[href]:after{content:"";}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div>
+      <h1>DELTA GREEN</h1>
+      <div class="subhead">AGENT DOCUMENTATION SHEET — DD FORM 315</div>
+    </div>
+    <div class="stamp-box">TOP SECRET//ORCON<br>SPECIAL ACCESS REQUIRED</div>
+  </header>
+
+  <div class="char-bar">
+    <label for="characterSelect">CHARACTER:</label>
+    <select id="characterSelect"></select>
+    <button id="newCharBtn">+ New Character</button>
+    <button id="deleteCharBtn" class="danger">✕ Delete Character</button>
+  </div>
+
+  <div class="toolbar">
+    <button id="saveBtn">💾 Save Now</button>
+    <button id="pdfBtn">🖨 Export PDF</button>
+    <button id="exportBtn">⇩ Export JSON</button>
+    <button id="importBtn">⇧ Import JSON</button>
+    <input type="file" id="importFile" accept="application/json">
+    <button id="resetBtn" class="danger">✕ Clear Sheet</button>
+    <span id="saveStatus">not yet saved</span>
+  </div>
+
+  <!-- ================= PERSONAL DATA ================= -->
+  <section class="block">
+    <div class="tab">PERSONAL DATA</div>
+    <div class="content">
+      <div class="row">
+        <div><span class="field-label">1. Last Name, First Name, MI</span><input type="text" id="pd_name" data-field></div>
+        <div><span class="field-label">2. Profession (Rank if applicable)</span><input type="text" id="pd_profession" data-field></div>
+      </div>
+      <div class="row">
+        <div><span class="field-label">3. Employer</span><input type="text" id="pd_employer" data-field></div>
+        <div><span class="field-label">4. Nationality</span><input type="text" id="pd_nationality" data-field></div>
+      </div>
+      <div class="row">
+        <div style="max-width:160px;">
+          <span class="field-label">5. Sex</span>
+          <select id="pd_sex" data-field>
+            <option value="">—</option>
+            <option value="F">F</option>
+            <option value="M">M</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div style="max-width:220px;"><span class="field-label">6. Age and D.O.B.</span><input type="text" id="pd_age" data-field></div>
+        <div style="flex:2;"><span class="field-label">7. Education and Occupational History</span><textarea id="pd_history" data-field rows="3"></textarea></div>
+      </div>
+      <div class="row">
+        <div style="flex:2;"><span class="field-label">10. Physical Description</span><textarea id="pd_physdesc" data-field rows="2"></textarea></div>
+        <div><span class="field-label">Distinguishing Features</span><textarea id="pd_features" data-field rows="2"></textarea></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATISTICAL / PSYCHOLOGICAL DATA ================= -->
+  <section class="block">
+    <div class="tab">STATISTICAL DATA</div>
+    <div class="content">
+      <h3 class="subhead2">8. Statistics (Score × 5)</h3>
+      <div class="stat-grid" id="statGrid">
+        <!-- stat lines injected by JS -->
+      </div>
+
+      <h3 class="subhead2" style="margin-top:18px;">9. Derived Attributes</h3>
+      <div class="derived-grid" id="derivedGrid">
+        <div class="hdr"></div><div class="hdr">Maximum</div><div class="hdr">Current</div><div class="hdr"></div>
+        <div>Hit Points (HP)</div><input type="text" id="hp_max" readonly><input type="number" id="hp_cur" data-field><button class="mini-btn" data-reset="hp_cur:hp_max">↺</button>
+        <div>Willpower Points (WP)</div><input type="text" id="wp_max" readonly><input type="number" id="wp_cur" data-field><button class="mini-btn" data-reset="wp_cur:wp_max">↺</button>
+        <div>Sanity Points (SAN)</div><input type="text" id="san_max" readonly><input type="number" id="san_cur" data-field><button class="mini-btn" data-reset="san_cur:san_max">↺</button>
+        <div>Breaking Point (BP)</div><input type="text" id="bp_calc" readonly><input type="number" id="bp_cur" data-field><button class="mini-btn" id="bpRecalcBtn" title="Recalculate: current SAN − POW">↺</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;">
+        HP max = ⌈(STR+CON)/2⌉ &nbsp;·&nbsp; WP max = POW &nbsp;·&nbsp; SAN max = POW×5 &nbsp;·&nbsp; BP recalculates as current SAN − POW when you press ↺ (do this whenever SAN resets after hitting a Breaking Point).
+      </div>
+
+      <h3 class="subhead2" style="margin-top:18px;">13. Incidents of SAN Loss Without Going Insane</h3>
+      <div class="san-track">
+        <div class="grp">Violence:
+          <input type="checkbox" data-field id="san_v1"><input type="checkbox" data-field id="san_v2"><input type="checkbox" data-field id="san_v3">
+          <label class="adapted"><input type="checkbox" data-field id="san_v_adapted"> adapted</label>
+        </div>
+        <div class="grp">Helplessness:
+          <input type="checkbox" data-field id="san_h1"><input type="checkbox" data-field id="san_h2"><input type="checkbox" data-field id="san_h3">
+          <label class="adapted"><input type="checkbox" data-field id="san_h_adapted"> adapted</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="tab">PSYCHOLOGICAL DATA</div>
+    <div class="content">
+      <h3 class="subhead2">11. Bonds</h3>
+      <table id="bondsTable">
+        <tbody id="bondsBody"></tbody>
+      </table>
+      <button class="add-row-btn" id="addBondBtn">+ add bond</button>
+
+      <h3 class="subhead2" style="margin-top:18px;">12. Motivations and Mental Disorders</h3>
+      <textarea id="motivations" data-field rows="4" placeholder="Up to five motivations. Replace one with a new disorder each time SAN hits the Breaking Point."></textarea>
+    </div>
+  </section>
+
+  <!-- ================= SKILLS ================= -->
+  <section class="block">
+    <div class="tab">APPLICABLE SKILL SETS</div>
+    <div class="content">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">
+        Check a box when you attempt to use a skill and fail. After the session, press "Apply Session Advances" below to add 1D4−1 to each checked skill and clear the checks.
+      </div>
+      <div class="skills-grid" id="skillsGrid"></div>
+
+      <div class="other-skills">
+        <h3 class="subhead2">Foreign Languages and Other Skills</h3>
+        <div id="otherSkillsGrid"></div>
+        <button class="add-row-btn" id="addOtherSkillBtn">+ add skill</button>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button class="toolbar-btn mini-btn" style="padding:8px 14px;font-size:11px;" id="advanceBtn">🎲 Apply Session Advances (1D4−1 to checked skills)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INJURIES ================= -->
+  <section class="block">
+    <div class="tab">INJURIES</div>
+    <div class="content">
+      <span class="field-label">14. Wounds and Ailments</span>
+      <textarea id="wounds" data-field rows="4"></textarea>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;">
+        <input type="checkbox" id="firstAidUsed" data-field>
+        Has First Aid been attempted since the last injury? (only Medicine, Surgery, or long-term rest can help further)
+      </label>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPMENT ================= -->
+  <section class="block">
+    <div class="tab">EQUIPMENT</div>
+    <div class="content">
+      <span class="field-label">15. Armor and Gear</span>
+      <textarea id="gear" data-field rows="4" placeholder="Body armor reduces the damage of all attacks except Called Shots and successful Lethality rolls."></textarea>
+
+      <h3 class="subhead2" style="margin-top:16px;">16. Weapons</h3>
+      <table class="equip" id="weaponsTable">
+        <thead>
+          <tr><th style="width:8%;"></th><th>Weapon</th><th>Skill %</th><th>Base Range</th><th>Damage</th><th>Armor Piercing</th><th>Lethality %</th><th>Kill Radius</th><th>Ammo</th></tr>
+        </thead>
+        <tbody id="weaponsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= REMARKS ================= -->
+  <section class="block">
+    <div class="tab">REMARKS</div>
+    <div class="content">
+      <div class="row">
+        <div><span class="field-label">17. Personal Details and Notes</span><textarea id="notes" data-field rows="5"></textarea></div>
+        <div><span class="field-label">18. Developments Which Affect Home and Family</span><textarea id="devHome" data-field rows="5"></textarea></div>
+      </div>
+
+      <h3 class="subhead2">19. Special Training</h3>
+      <table id="trainingTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr><th style="text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;">Special Training</th><th style="text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;">Skill or Stat Used</th></tr></thead>
+        <tbody id="trainingBody"></tbody>
+      </table>
+      <button class="add-row-btn" id="addTrainingBtn">+ add row</button>
+
+      <div style="margin-top:12px;font-size:11px;color:var(--muted);font-style:italic;">
+        Please indicate why this agent was recruited and why the agent agreed to be recruited.
+      </div>
+      <textarea id="recruitReason" data-field rows="3" style="margin-top:6px;"></textarea>
+    </div>
+  </section>
+
+  <footer class="sig">
+    <div><span class="field-label">20. Authorizing Officer</span><input type="text" id="authOfficer" data-field></div>
+    <div><span class="field-label">21. Agent Signature</span><input type="text" id="agentSig" data-field></div>
+  </footer>
+
+  <div class="formcode">DD FORM 315 · 112382 · TOP SECRET//ORCON//SPECIAL ACCESS REQUIRED–DELTA GREEN · AGENT DOCUMENTATION SHEET · UNITED STATES</div>
+
+</div>
+
+<script>
+const ROSTER_KEY = 'deltaGreenRoster_v1';
+const ACTIVE_KEY = 'deltaGreenActiveChar_v1';
+function charStorageKey(id){ return 'deltaGreenSheet_v1_' + id; }
+function genId(){ return 'char_' + Date.now() + '_' + Math.floor(Math.random()*10000); }
+
+let roster = [];
+let activeId = null;
+
+/* ---------------- Static data ---------------- */
+const STATS = [
+  {id:'str', name:'Strength (STR)'},
+  {id:'con', name:'Constitution (CON)'},
+  {id:'dex', name:'Dexterity (DEX)'},
+  {id:'int', name:'Intelligence (INT)'},
+  {id:'pow', name:'Power (POW)'},
+  {id:'cha', name:'Charisma (CHA)'},
+];
+
+const SKILLS = [
+  {id:'accounting', name:'Accounting', base:10},
+  {id:'alertness', name:'Alertness', base:20},
+  {id:'anthropology', name:'Anthropology', base:0},
+  {id:'archeology', name:'Archeology', base:0},
+  {id:'art', name:'Art', base:0, spec:true},
+  {id:'artillery', name:'Artillery', base:0},
+  {id:'athletics', name:'Athletics', base:30},
+  {id:'bureaucracy', name:'Bureaucracy', base:10},
+  {id:'compsci', name:'Computer Science', base:0},
+  {id:'craft', name:'Craft', base:0, spec:true},
+  {id:'criminology', name:'Criminology', base:10},
+  {id:'demolitions', name:'Demolitions', base:0},
+  {id:'disguise', name:'Disguise', base:10},
+  {id:'dodge', name:'Dodge', base:30},
+  {id:'drive', name:'Drive', base:20},
+  {id:'firearms', name:'Firearms', base:20},
+  {id:'firstaid', name:'First Aid', base:10},
+  {id:'forensics', name:'Forensics', base:0},
+  {id:'heavymach', name:'Heavy Machinery', base:10},
+  {id:'heavyweap', name:'Heavy Weapons', base:0},
+  {id:'history', name:'History', base:10},
+  {id:'humint', name:'HUMINT', base:10},
+  {id:'law', name:'Law', base:0},
+  {id:'medicine', name:'Medicine', base:0},
+  {id:'melee', name:'Melee Weapons', base:30},
+  {id:'milsci', name:'Military Science', base:0, spec:true},
+  {id:'navigate', name:'Navigate', base:10},
+  {id:'occult', name:'Occult', base:10},
+  {id:'persuade', name:'Persuade', base:20},
+  {id:'pharmacy', name:'Pharmacy', base:0},
+  {id:'pilot', name:'Pilot', base:0, spec:true},
+  {id:'psychotherapy', name:'Psychotherapy', base:10},
+  {id:'ride', name:'Ride', base:10},
+  {id:'science', name:'Science', base:0, spec:true},
+  {id:'search', name:'Search', base:20},
+  {id:'sigint', name:'SIGINT', base:0},
+  {id:'stealth', name:'Stealth', base:10},
+  {id:'surgery', name:'Surgery', base:0},
+  {id:'survival', name:'Survival', base:10},
+  {id:'swim', name:'Swim', base:20},
+  {id:'unarmed', name:'Unarmed Combat', base:40},
+  {id:'unnatural', name:'Unnatural', base:0},
+];
+
+/* ---------------- Build static DOM ---------------- */
+function buildStats(){
+  const grid = document.getElementById('statGrid');
+  STATS.forEach(s=>{
+    const line = document.createElement('div');
+    line.className = 'stat-line';
+    line.innerHTML = `
+      <span class="name">${s.name}</span>
+      <input type="number" min="0" max="99" id="stat_${s.id}" data-field data-stat>
+      <span class="pct" id="stat_${s.id}_x5">0%</span>
+    `;
+    grid.appendChild(line);
+  });
+}
+
+function buildSkills(){
+  const grid = document.getElementById('skillsGrid');
+  SKILLS.forEach(sk=>{
+    const row = document.createElement('div');
+    row.className = 'skill-row';
+    row.innerHTML = `
+      <input type="checkbox" data-field id="chk_${sk.id}" title="mark failure">
+      <div class="sname">
+        <span>${sk.name}</span>
+        ${sk.spec ? `<input type="text" class="spec" data-field id="spec_${sk.id}" placeholder="specify…">` : ''}
+      </div>
+      <input type="number" data-field id="pct_${sk.id}" value="${sk.base}" min="0" max="99">
+    `;
+    grid.appendChild(row);
+  });
+}
+
+let otherSkillCount = 0;
+function addOtherSkillRow(prefillName, prefillPct, prefillChecked){
+  const idx = otherSkillCount++;
+  const grid = document.getElementById('otherSkillsGrid');
+  const row = document.createElement('div');
+  row.className = 'skill-row';
+  row.innerHTML = `
+    <input type="checkbox" data-field id="chk_other_${idx}" ${prefillChecked ? 'checked':''}>
+    <input type="text" data-field id="name_other_${idx}" placeholder="skill name" value="${prefillName||''}">
+    <input type="number" data-field id="pct_other_${idx}" min="0" max="99" value="${prefillPct!==undefined?prefillPct:0}">
+  `;
+  grid.appendChild(row);
+  attachAutosave(row);
+}
+
+let bondCount = 0;
+function addBondRow(prefillName, prefillScore){
+  const idx = bondCount++;
+  const tbody = document.getElementById('bondsBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="width:75%;"><input type="text" data-field id="bond_name_${idx}" placeholder="who / what" value="${prefillName||''}"></td>
+    <td><input type="number" data-field id="bond_score_${idx}" min="0" max="20" value="${prefillScore!==undefined?prefillScore:''}"></td>
+  `;
+  tbody.appendChild(tr);
+  attachAutosave(tr);
+}
+
+let weaponCount = 0;
+const WEAPON_LABELS = ['(a)','(b)','(c)','(d)','(e)','(f)','(g)'];
+function addWeaponRow(prefill){
+  const idx = weaponCount++;
+  const tbody = document.getElementById('weaponsBody');
+  const tr = document.createElement('tr');
+  const p = prefill || {};
+  tr.innerHTML = `
+    <td style="text-align:center;font-family:'Special Elite',monospace;">${WEAPON_LABELS[idx] || (idx+1)}</td>
+    <td><input type="text" class="wname" data-field id="wpn_name_${idx}" value="${p.name||''}"></td>
+    <td><input type="text" data-field id="wpn_skill_${idx}" value="${p.skill||''}"></td>
+    <td><input type="text" data-field id="wpn_range_${idx}" value="${p.range||''}"></td>
+    <td><input type="text" data-field id="wpn_dmg_${idx}" value="${p.dmg||''}"></td>
+    <td><input type="text" data-field id="wpn_ap_${idx}" value="${p.ap||''}"></td>
+    <td><input type="text" data-field id="wpn_leth_${idx}" value="${p.leth||''}"></td>
+    <td><input type="text" data-field id="wpn_kill_${idx}" value="${p.kill||''}"></td>
+    <td><input type="text" data-field id="wpn_ammo_${idx}" value="${p.ammo||''}"></td>
+  `;
+  tbody.appendChild(tr);
+  attachAutosave(tr);
+}
+
+let trainingCount = 0;
+function addTrainingRow(prefillA, prefillB){
+  const idx = trainingCount++;
+  const tbody = document.getElementById('trainingBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="border-bottom:1px dotted var(--rule);padding:4px;"><input type="text" data-field id="train_a_${idx}" value="${prefillA||''}"></td>
+    <td style="border-bottom:1px dotted var(--rule);padding:4px;"><input type="text" data-field id="train_b_${idx}" value="${prefillB||''}"></td>
+  `;
+  tbody.appendChild(tr);
+  attachAutosave(tr);
+}
+
+/* ---------------- Calculations ---------------- */
+function recalcAll(){
+  // stat x5
+  let str=0, con=0, pow=0;
+  STATS.forEach(s=>{
+    const el = document.getElementById('stat_'+s.id);
+    const val = parseInt(el.value)||0;
+    document.getElementById('stat_'+s.id+'_x5').textContent = (val*5)+'%';
+    if(s.id==='str') str=val;
+    if(s.id==='con') con=val;
+    if(s.id==='pow') pow=val;
+  });
+  const hpMax = Math.ceil((str+con)/2);
+  const wpMax = pow;
+  const sanMax = pow*5;
+  document.getElementById('hp_max').value = hpMax;
+  document.getElementById('wp_max').value = wpMax;
+  document.getElementById('san_max').value = sanMax;
+
+  const sanCurEl = document.getElementById('san_cur');
+  const sanCur = sanCurEl.value === '' ? sanMax : (parseInt(sanCurEl.value)||0);
+  document.getElementById('bp_calc').value = (sanCur - pow);
+}
+
+function wireStatRecalc(){
+  document.querySelectorAll('[data-stat]').forEach(el=>{
+    el.addEventListener('input', ()=>{ recalcAll(); });
+  });
+  document.getElementById('san_cur').addEventListener('input', recalcAll);
+}
+
+document.querySelectorAll('.mini-btn[data-reset]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const [curId, maxId] = btn.getAttribute('data-reset').split(':');
+    document.getElementById(curId).value = document.getElementById(maxId).value;
+    saveState();
+  });
+});
+
+document.getElementById('bpRecalcBtn').addEventListener('click', ()=>{
+  document.getElementById('bp_cur').value = document.getElementById('bp_calc').value;
+  saveState();
+});
+
+document.getElementById('advanceBtn').addEventListener('click', ()=>{
+  let advanced = [];
+  SKILLS.forEach(sk=>{
+    const chk = document.getElementById('chk_'+sk.id);
+    if(chk.checked){
+      const pctEl = document.getElementById('pct_'+sk.id);
+      const roll = Math.max(0, Math.floor(Math.random()*4)+1-1); // 1D4-1
+      pctEl.value = Math.min(99, (parseInt(pctEl.value)||0) + roll);
+      chk.checked = false;
+      advanced.push(sk.name+' +'+roll);
+    }
+  });
+  for(let i=0;i<otherSkillCount;i++){
+    const chk = document.getElementById('chk_other_'+i);
+    if(chk && chk.checked){
+      const pctEl = document.getElementById('pct_other_'+i);
+      const roll = Math.max(0, Math.floor(Math.random()*4)+1-1);
+      pctEl.value = Math.min(99, (parseInt(pctEl.value)||0) + roll);
+      chk.checked = false;
+      advanced.push((document.getElementById('name_other_'+i).value||'skill')+' +'+roll);
+    }
+  }
+  saveState();
+  setStatus(advanced.length ? ('Advanced: '+advanced.join(', ')) : 'No skills were checked.');
+});
+
+/* ---------------- Persistence ---------------- */
+let saveTimer = null;
+function setStatus(msg){
+  document.getElementById('saveStatus').textContent = msg;
+}
+function attachAutosave(scope){
+  scope.querySelectorAll('[data-field]').forEach(el=>{
+    const evt = (el.type==='checkbox' || el.tagName==='SELECT') ? 'change' : 'input';
+    el.addEventListener(evt, ()=>{
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveState, 400);
+    });
+  });
+}
+
+function collectState(){
+  const state = {};
+  document.querySelectorAll('[data-field]').forEach(el=>{
+    if(!el.id) return;
+    state[el.id] = el.type==='checkbox' ? el.checked : el.value;
+  });
+  state.__meta = {
+    bondCount, weaponCount, trainingCount, otherSkillCount,
+    savedAt: new Date().toISOString()
+  };
+  return state;
+}
+
+function saveState(){
+  if(!activeId) return;
+  try{
+    const state = collectState();
+    localStorage.setItem(charStorageKey(activeId), JSON.stringify(state));
+    setStatus('saved '+ new Date().toLocaleTimeString());
+  }catch(e){
+    setStatus('save failed — storage unavailable');
+    console.error(e);
+  }
+}
+
+function applyState(state){
+  if(!state) return;
+  // rebuild dynamic rows first based on meta counts
+  const meta = state.__meta || {};
+  document.getElementById('bondsBody').innerHTML = '';
+  document.getElementById('weaponsBody').innerHTML = '';
+  document.getElementById('trainingBody').innerHTML = '';
+  document.getElementById('otherSkillsGrid').innerHTML = '';
+  bondCount = 0; weaponCount = 0; trainingCount = 0; otherSkillCount = 0;
+
+  const bonds = meta.bondCount || 6;
+  for(let i=0;i<Math.max(bonds,1);i++) addBondRow();
+  const weapons = meta.weaponCount || 7;
+  for(let i=0;i<Math.max(weapons,1);i++) addWeaponRow();
+  const trainings = meta.trainingCount || 4;
+  for(let i=0;i<Math.max(trainings,1);i++) addTrainingRow();
+  const others = meta.otherSkillCount || 4;
+  for(let i=0;i<Math.max(others,1);i++) addOtherSkillRow();
+
+  document.querySelectorAll('[data-field]').forEach(el=>{
+    if(el.id in state){
+      if(el.type==='checkbox') el.checked = !!state[el.id];
+      else el.value = state[el.id];
+    }
+  });
+  recalcAll();
+}
+
+function clearFormToBlank(){
+  document.querySelectorAll('[data-field]').forEach(el=>{
+    if(el.type==='checkbox') el.checked=false; else el.value='';
+  });
+  document.getElementById('bondsBody').innerHTML = '';
+  document.getElementById('weaponsBody').innerHTML = '';
+  document.getElementById('trainingBody').innerHTML = '';
+  document.getElementById('otherSkillsGrid').innerHTML = '';
+  bondCount=0; weaponCount=0; trainingCount=0; otherSkillCount=0;
+  for(let i=0;i<6;i++) addBondRow();
+  for(let i=0;i<7;i++) addWeaponRow();
+  for(let i=0;i<4;i++) addTrainingRow();
+  for(let i=0;i<4;i++) addOtherSkillRow();
+  SKILLS.forEach(sk=>{ document.getElementById('pct_'+sk.id).value = sk.base; });
+  recalcAll();
+}
+
+function loadState(id){
+  const raw = localStorage.getItem(charStorageKey(id));
+  if(!raw){
+    clearFormToBlank();
+    setStatus('new character sheet — start filling it in');
+    return;
+  }
+  try{
+    applyState(JSON.parse(raw));
+    setStatus('loaded '+ new Date().toLocaleTimeString());
+  }catch(e){
+    console.error(e);
+    setStatus('could not read saved data');
+  }
+}
+
+/* ---------------- Roster (multi-character) management ---------------- */
+function loadRoster(){
+  try{
+    const raw = localStorage.getItem(ROSTER_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveRoster(){
+  localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+}
+function populateCharacterSelect(){
+  const sel = document.getElementById('characterSelect');
+  sel.innerHTML = '';
+  roster.forEach(entry=>{
+    const opt = document.createElement('option');
+    opt.value = entry.id;
+    opt.textContent = entry.name || 'Unnamed Agent';
+    sel.appendChild(opt);
+  });
+  sel.value = activeId;
+}
+function updateActiveRosterName(){
+  const entry = roster.find(r=>r.id===activeId);
+  if(!entry) return;
+  const nameField = document.getElementById('pd_name').value.trim();
+  entry.name = nameField || 'Unnamed Agent';
+  saveRoster();
+  const opt = document.querySelector('#characterSelect option[value="'+activeId+'"]');
+  if(opt) opt.textContent = entry.name;
+}
+function switchToCharacter(id){
+  saveState();
+  activeId = id;
+  localStorage.setItem(ACTIVE_KEY, activeId);
+  document.getElementById('characterSelect').value = activeId;
+  loadState(activeId);
+}
+function createNewCharacter(){
+  saveState();
+  const id = genId();
+  roster.push({id, name:'New Agent'});
+  saveRoster();
+  activeId = id;
+  localStorage.setItem(ACTIVE_KEY, activeId);
+  populateCharacterSelect();
+  clearFormToBlank();
+  saveState();
+  setStatus('created a new character');
+}
+function deleteActiveCharacter(){
+  const entry = roster.find(r=>r.id===activeId);
+  const label = entry ? entry.name : 'this character';
+  if(!confirm('Delete "'+label+'"? This removes all of its saved data and cannot be undone.')) return;
+  localStorage.removeItem(charStorageKey(activeId));
+  roster = roster.filter(r=>r.id!==activeId);
+  saveRoster();
+  if(roster.length===0){
+    const id = genId();
+    roster.push({id, name:'New Agent'});
+    saveRoster();
+    activeId = id;
+    populateCharacterSelect();
+    clearFormToBlank();
+    saveState();
+  }else{
+    activeId = roster[0].id;
+    localStorage.setItem(ACTIVE_KEY, activeId);
+    populateCharacterSelect();
+    loadState(activeId);
+  }
+  setStatus('deleted "'+label+'"');
+}
+
+document.getElementById('characterSelect').addEventListener('change', (e)=>{
+  switchToCharacter(e.target.value);
+});
+document.getElementById('newCharBtn').addEventListener('click', createNewCharacter);
+document.getElementById('deleteCharBtn').addEventListener('click', deleteActiveCharacter);
+document.getElementById('pd_name').addEventListener('input', updateActiveRosterName);
+
+/* ---------------- Toolbar actions ---------------- */
+document.getElementById('saveBtn').addEventListener('click', saveState);
+
+document.getElementById('pdfBtn').addEventListener('click', ()=>{
+  const entry = roster.find(r=>r.id===activeId);
+  const prevTitle = document.title;
+  const nm = (entry && entry.name && entry.name !== 'New Agent') ? entry.name : (document.getElementById('pd_name').value.trim() || 'Delta_Green_Agent');
+  document.title = nm.replace(/[^a-z0-9]+/gi,'_') + '_Character_Sheet';
+  saveState();
+  window.print();
+  document.title = prevTitle;
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const state = collectState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const nameField = document.getElementById('pd_name').value.trim();
+  const fname = (nameField ? nameField.replace(/[^a-z0-9]+/gi,'_') : 'delta_green_agent') + '.json';
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const state = JSON.parse(reader.result);
+      applyState(state);
+      updateActiveRosterName();
+      saveState();
+      setStatus('imported '+file.name);
+    }catch(err){
+      alert('That file could not be read as a saved character sheet.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Clear every field on this character? This cannot be undone.')){
+    clearFormToBlank();
+    updateActiveRosterName();
+    saveState();
+    setStatus('sheet cleared');
+  }
+});
+
+/* ---------------- Init ---------------- */
+buildStats();
+buildSkills();
+wireStatRecalc();
+attachAutosave(document);
+
+roster = loadRoster();
+activeId = localStorage.getItem(ACTIVE_KEY);
+if(roster.length === 0){
+  const id = genId();
+  roster = [{id, name:'New Agent'}];
+  saveRoster();
+  activeId = id;
+}
+if(!activeId || !roster.find(r=>r.id===activeId)){
+  activeId = roster[0].id;
+}
+localStorage.setItem(ACTIVE_KEY, activeId);
+populateCharacterSelect();
+loadState(activeId);
+
+</script>
+</body>
+</html>
