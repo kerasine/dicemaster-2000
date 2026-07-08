@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Delta Green Tabletop Tools</title>
+<title>Dicemaster 2000 Tabletop Tools</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
@@ -20,6 +20,17 @@
     --muted:#9a96a6;
     --muted2:#6f6c7a;
   }
+  body.light{
+    --bg:#f3efe0;
+    --bg2:#ece5cf;
+    --panel:#fbf8ee;
+    --border:#cbbf98;
+    --paper:#211f19;
+    --accent:#7c1f1f;
+    --accent-bright:#a02a2a;
+    --muted:#5c5748;
+    --muted2:#83795f;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
     background:
@@ -28,11 +39,33 @@
       var(--bg);
     color:var(--paper);
     font-family:'Courier Prime', monospace;
-    font-size:17px;
+    font-size:19px;
     min-height:100vh;
     padding:0 0 60px;
+    transition:background .3s, color .3s;
   }
-  .wrap{max-width:920px;margin:0 auto;padding:0 20px;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;}
+
+  .theme-toggle{
+    position:fixed;
+    top:18px;
+    right:18px;
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--paper);
+    font-size:21px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .2s, border-color .2s, transform .2s;
+    z-index:10;
+  }
+  .theme-toggle:hover{border-color:var(--accent); transform:translateY(-2px);}
 
   header{
     padding:56px 0 28px;
@@ -40,7 +73,7 @@
   }
   header .kicker{
     font-family:'Special Elite', monospace;
-    font-size:13px;
+    font-size:16px;
     letter-spacing:4px;
     color:var(--accent-bright);
     text-transform:uppercase;
@@ -48,15 +81,15 @@
   }
   header h1{
     font-family:'Special Elite', monospace;
-    font-size:clamp(32px,6vw,52px);
-    letter-spacing:4px;
+    font-size:clamp(36px,7vw,58px);
+    letter-spacing:3px;
     color:var(--paper);
   }
   header p{
-    margin-top:14px;
+    margin-top:16px;
     color:var(--muted);
-    font-size:17px;
-    max-width:640px;
+    font-size:19px;
+    max-width:680px;
     margin-left:auto;
     margin-right:auto;
     line-height:1.6;
@@ -65,13 +98,13 @@
     width:60px;
     height:2px;
     background:var(--accent);
-    margin:24px auto 0;
+    margin:26px auto 0;
   }
 
   .cards{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:20px;
+    gap:22px;
     margin-top:36px;
   }
   @media (max-width:720px){
@@ -82,12 +115,12 @@
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:10px;
-    padding:26px 26px 24px;
+    padding:28px 28px 26px;
     display:flex;
     flex-direction:column;
     position:relative;
     overflow:hidden;
-    transition:border-color .2s, transform .2s;
+    transition:border-color .2s, transform .2s, background .3s;
   }
   .card:hover{
     border-color:var(--accent);
@@ -95,35 +128,35 @@
   }
   .card .tag{
     font-family:'Special Elite', monospace;
-    font-size:12px;
+    font-size:14px;
     letter-spacing:2px;
     text-transform:uppercase;
     color:var(--accent-bright);
-    margin-bottom:10px;
+    margin-bottom:12px;
   }
   .card h2{
     font-family:'Special Elite', monospace;
-    font-size:24px;
+    font-size:28px;
     letter-spacing:1px;
-    margin-bottom:10px;
+    margin-bottom:12px;
     color:var(--paper);
   }
   .card p.desc{
     color:var(--muted);
-    font-size:15px;
+    font-size:17px;
     line-height:1.6;
-    margin-bottom:16px;
+    margin-bottom:18px;
   }
   .card ul{
     list-style:none;
-    margin:0 0 22px;
+    margin:0 0 24px;
     padding:0;
     flex:1;
   }
   .card ul li{
-    font-size:14.5px;
+    font-size:16.5px;
     color:var(--muted);
-    padding:5px 0 5px 16px;
+    padding:6px 0 6px 18px;
     position:relative;
     line-height:1.5;
     border-bottom:1px dotted var(--border);
@@ -143,12 +176,12 @@
     gap:8px;
     font-family:'Special Elite', monospace;
     letter-spacing:1px;
-    font-size:14px;
+    font-size:16px;
     text-transform:uppercase;
     text-decoration:none;
     background:var(--accent);
-    color:var(--paper);
-    padding:12px 18px;
+    color:#f4f0e2;
+    padding:13px 20px;
     border-radius:6px;
     transition:background .2s;
     text-align:center;
@@ -165,18 +198,19 @@
   }
 
   .note{
-    margin-top:40px;
+    margin-top:42px;
     background:var(--bg2);
     border:1px solid var(--border);
     border-radius:10px;
-    padding:20px 22px;
-    font-size:14.5px;
+    padding:22px 24px;
+    font-size:16.5px;
     color:var(--muted);
     line-height:1.7;
+    transition:background .3s;
   }
   .note h3{
     font-family:'Special Elite', monospace;
-    font-size:14px;
+    font-size:16px;
     letter-spacing:2px;
     text-transform:uppercase;
     color:var(--paper);
@@ -186,27 +220,28 @@
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:4px;
-    padding:1px 5px;
+    padding:2px 6px;
     color:var(--paper);
-    font-size:14px;
+    font-size:16px;
   }
 
   footer{
     text-align:center;
     margin-top:44px;
     color:var(--muted2);
-    font-size:12.5px;
+    font-size:14px;
     letter-spacing:1px;
     text-transform:uppercase;
   }
 </style>
 </head>
 <body>
+<button class="theme-toggle" id="themeToggle" title="Toggle day/night mode" onclick="toggleSiteTheme()">☀️</button>
 <div class="wrap">
 
   <header>
     <div class="kicker">Case Files &amp; Field Tools</div>
-    <h1>DELTA GREEN TABLETOP TOOLS</h1>
+    <h1>DICEMASTER 2000 TABLETOP TOOLS</h1>
     <p>Two browser-based utilities for running or playing Delta Green (or any percentile / d20 tabletop RPG). No installs, no accounts, no server — everything runs locally in your browser and saves to your device.</p>
     <div class="rule"></div>
   </header>
@@ -216,7 +251,7 @@
     <div class="card">
       <div class="glyph">📋</div>
       <div class="tag">Agent Documentation</div>
-      <h2>Character Sheet</h2>
+      <h2>Delta Green Character Sheet</h2>
       <p class="desc">An interactive DD Form 315 — stats, derived attributes, sanity tracking, skills, bonds, equipment, and injuries, styled as a typewritten dossier.</p>
       <ul>
         <li>Manage multiple agents from one roster</li>
@@ -253,5 +288,28 @@
   <footer>Delta Green is a trademark of Arc Dream Publishing · Fan-made tools, unofficial</footer>
 
 </div>
+<script>
+/**
+ * Day/night theme toggle for the Dicemaster 2000 landing page.
+ * Preference is remembered in localStorage; falls back to the
+ * visitor's OS-level light/dark preference on first visit.
+ */
+function applyTheme(mode){
+  const isLight = mode === 'light';
+  document.body.classList.toggle('light', isLight);
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = isLight ? '🌙' : '☀️';
+}
+function toggleSiteTheme(){
+  const next = document.body.classList.contains('light') ? 'dark' : 'light';
+  localStorage.setItem('dicemasterTheme', next);
+  applyTheme(next);
+}
+(function initTheme(){
+  const saved = localStorage.getItem('dicemasterTheme');
+  const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(saved || (prefersLight ? 'light' : 'dark'));
+})();
+</script>
 </body>
 </html>
