@@ -90,6 +90,9 @@ select.styled{cursor:pointer}
 .lf-xs{flex:0 0 54px}.lf-sm{flex:0 0 72px}.lf-md{flex:1 1 90px}.lf-lg{flex:2 1 130px}.lf-xl{flex:3 1 160px}
 .log-field-check{display:flex;flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:6px;flex:0 0 auto}
 .log-field-check label{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--text3);text-transform:uppercase;white-space:nowrap;cursor:pointer}
+.help-icon{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border-radius:50%;border:1px solid var(--text3);color:var(--text3);font-size:9px;font-weight:700;line-height:1;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0;vertical-align:middle}
+.help-icon:hover{border-color:var(--accent);color:var(--accent)}
+.field-help-popup{position:fixed;z-index:200;background:var(--bg4);border:1px solid var(--accent);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.4;color:var(--text);max-width:260px;box-shadow:0 4px 16px rgba(0,0,0,.35);text-transform:none;letter-spacing:0;font-weight:400}
 .log-field-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin:0}
 .miss-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px;background:rgba(248,113,113,.15);color:var(--danger);border:1px solid var(--danger)}
 .entry-comment{font-size:13px;color:var(--text2);font-style:italic}
@@ -131,14 +134,12 @@ select.styled{cursor:pointer}
     <div class="section-card">
       <div class="section-title">Log Roll</div>
       <div class="log-form-grid">
-        <div class="log-field lf-xs"><label># Dice</label><input type="number" id="mr-count" value="1" min="1" max="99"></div>
-        <div class="log-field lf-sm"><label>Type</label><select id="mr-type"><option value="4">d4</option><option value="6">d6</option><option value="8">d8</option><option value="10">d10</option><option value="12">d12</option><option value="20" selected>d20</option><option value="100">d%</option></select></div>
-        <div class="log-field lf-xs"><label>Modifier</label><input type="number" id="mr-mod" value="0"></div>
-        <div class="log-field lf-sm"><label>Total</label><input type="number" id="mr-total" placeholder="18"></div>
-        <div class="log-field lf-md"><label>Dice Values</label><input type="text" id="mr-indiv" placeholder="1-4-2"></div>
-        <div class="log-field-check" style="align-self:flex-end;padding-bottom:6px"><label for="mr-miss">Miss?</label><input type="checkbox" id="mr-miss"></div>
-        <div class="log-field lf-lg"><label>Label</label><select id="mr-label"></select></div>
-        <div class="log-field lf-xl"><label>Comments</label><input type="text" id="mr-comment" placeholder="Optional comments…"></div>
+        <div class="log-field lf-lg"><label>Dice Notation<span class="help-icon" onclick="showFieldHelp(event,'Enter the roll details in dice notation format. This is the number of dice (1, 2, etc), followed by the dice type (d6, d100, etc) and then any modifiers if applicable (+1, -2, etc). For example, a percentile roll would be 1d100, while a damage roll could be 2d6+2 or 2d6-1.')">?</span></label><input type="text" id="mr-notation" placeholder="2d6+1"></div>
+        <div class="log-field lf-sm"><label>Total<span class="help-icon" onclick="showFieldHelp(event,'The final result of the roll, including any modifier.')">?</span></label><input type="number" id="mr-total" placeholder="18"></div>
+        <div class="log-field lf-md"><label>Dice Values<span class="help-icon" onclick="showFieldHelp(event,'Optional: individual die results, colon-separated, e.g. 4:9 or 3:2:+1.')">?</span></label><input type="text" id="mr-indiv" placeholder="4:9 or 3:2:+1"></div>
+        <div class="log-field-check" style="align-self:flex-end;padding-bottom:6px"><label for="mr-miss">Miss?<span class="help-icon" onclick="showFieldHelp(event,'Check this if the roll was a miss/failure.')">?</span></label><input type="checkbox" id="mr-miss"></div>
+        <div class="log-field lf-lg"><label>Label<span class="help-icon" onclick="showFieldHelp(event,'Optional: the skill or check this roll was for.')">?</span></label><select id="mr-label"></select></div>
+        <div class="log-field lf-xl"><label>Comments<span class="help-icon" onclick="showFieldHelp(event,'Optional: any notes about this roll.')">?</span></label><input type="text" id="mr-comment" placeholder="Optional comments…"></div>
         <div class="log-field" style="flex:0 0 auto;align-self:flex-end"><button class="btn btn-accent" onclick="addManualRoll()" style="white-space:nowrap;height:32px;padding:0 14px;font-size:13px">+ Log</button></div>
       </div>
     </div>
@@ -163,7 +164,7 @@ select.styled{cursor:pointer}
  * types in results they rolled at the table (or with physical dice)
  * and this app keeps a per-session history, running stats, and a
  * CSV export. All state is persisted to localStorage under the key
- * "diceForge".
+ * "diceLoggerv2".
  * ------------------------------------------------------------------
  */
 
@@ -179,13 +180,31 @@ function skillOptions(selected){
   return '<option value=""'+(selected?'':' selected')+'>—</option>'+SKILLS.map(s=>`<option value="${esc(s)}"${s===selected?' selected':''}>${esc(s)}</option>`).join('');
 }
 
-/** Die types offered in the manual "Log Roll" form and used to render dice symbols (e.g. "d20") in the CSV export. */
-const DICE=[
-  {sides:4,sym:'d4'},{sides:6,sym:'d6'},
-  {sides:8,sym:'d8'},{sides:10,sym:'d10'},
-  {sides:12,sym:'d12'},{sides:20,sym:'d20'},
-  {sides:100,sym:'d%'}
-];
+/**
+ * Parses dice notation (e.g. "2d6+1", "d20", "1d100-3", "d%+2") into its parts.
+ * @param {string} str - Raw dice notation entered by the user.
+ * @returns {{count:number,sides:number,modifier:number}|null} Parsed parts, or null if invalid.
+ */
+function parseDiceNotation(str){
+  const m=/^\s*(\d+)?d(\d+|%)\s*([+-]\s*\d+)?\s*$/i.exec(str||'');
+  if(!m)return null;
+  const count=m[1]?parseInt(m[1],10):1;
+  const sides=m[2]==='%'?100:parseInt(m[2],10);
+  const modifier=m[3]?parseInt(m[3].replace(/\s+/g,''),10):0;
+  if(!count||count<1||!sides||sides<1)return null;
+  return {count,sides,modifier};
+}
+
+/**
+ * Parses a colon-separated list of individual die values (e.g. "4:9" or "2:11:+1") into integers.
+ * @param {string} str - Raw text from the Dice Values field.
+ * @returns {number[]|null} Array of parsed values (empty array if str is blank), or null if the format is invalid.
+ */
+function parseIndivValues(str){
+  if(!str)return [];
+  if(!/^\s*[+-]?\d+(\s*:\s*[+-]?\d+)*\s*$/.test(str))return null;
+  return str.split(':').map(v=>parseInt(v.trim(),10));
+}
 
 /**
  * In-memory application state. Loaded from / saved to localStorage as a whole.
@@ -208,12 +227,12 @@ function fDT(ts){return fDate(ts)+' '+new Date(ts).toLocaleTimeString([],{hour:'
 
 /** Loads saved state from localStorage, then guarantees at least one session exists. */
 function load(){
-  try{const s=JSON.parse(localStorage.getItem('diceForge')||'null');if(s)Object.assign(S,s);}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('diceLoggerv2')||'null');if(s)Object.assign(S,s);}catch(e){}
   if(!Object.keys(S.sessions).length){const id=genId();S.sessions[id]={id,name:'Session 1',created:Date.now(),rolls:[]};S.currentSessionId=id;}
   if(!S.viewingSessionId)S.viewingSessionId=S.currentSessionId;
 }
 /** Persists the whole state object to localStorage. */
-function save(){try{localStorage.setItem('diceForge',JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem('diceLoggerv2',JSON.stringify(S))}catch(e){}}
 
 /**
  * Switches the active sidebar tab (Sessions vs Stats) and shows the matching panel.
@@ -286,13 +305,12 @@ function updateHistory(){
           <button onclick="editRollNote('${r.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:10px;padding:0 2px;line-height:1;" title="Edit label">✎</button>
         </div>`
       :`<div class="entry-note-slot"></div>`;
-    const diceNotation=r.count+'d'+r.sides+(r.modifier>0?'+'+r.modifier:r.modifier<0?r.modifier:'');
     return`<div class="history-entry${isCrit?' crit-entry':isFumble?' fumble-entry':''}" id="hentry-${r.id}">
       <div class="entry-header">
-        <span class="entry-dice">${esc(r.label||'Roll')} -&gt; <span class="entry-total${isCrit?' crit':isFumble?' fumble':''}">${r.total}</span>${r.miss?'<span class="miss-badge">MISS</span>':''}</span>
+        <span class="entry-dice">${esc(r.label||r.comment||r.notation||'Roll')} -&gt; <span class="entry-total${isCrit?' crit':isFumble?' fumble':''}">${r.total}</span>${r.miss?'<span class="miss-badge">MISS</span>':''}</span>
         <span style="display:flex;align-items:center;gap:6px"><button onclick="editRollFull('${r.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:2px 4px;font-size:11px;border-radius:4px" title="Edit">✏</button><button onclick="deleteRoll('${r.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:2px 4px;font-size:11px;border-radius:4px" title="Delete">🗑</button></span>
       </div>
-      <div class="entry-notation-row"><span class="entry-notation">${diceNotation}</span>${r.comment?`<span class="entry-comment">Comment: ${esc(r.comment)}</span>`:''}</div>
+      <div class="entry-notation-row"><span class="entry-notation">${esc(r.notation||'')}</span>${r.comment?`<span class="entry-comment">Comment: ${esc(r.comment)}</span>`:''}</div>
       <div class="entry-time">${fDT(r.timestamp)}</div>
       ${noteHtml}
     </div>`}).join('');
@@ -362,27 +380,31 @@ function updateStats(){
     <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${misses}</div><div class="stat-label">Misses</div></div>`;
 }
 
+/** Returns the given value, or a single dash "-" if it is blank/empty, so exported fields are never left blank. */
+function blankDash(v){
+  const s=(v==null)?'':String(v).trim();
+  return s?s:'-';
+}
+
 /** Exports the currently viewed session's rolls as a downloadable CSV (.csv extension, comma-separated, with a header block). */
 function exportHistory(){
   const sess=S.sessions[S.viewingSessionId||S.currentSessionId];
   if(!sess){toast('No session');return;}
   const lines=[
-    'Session: '+(sess.name||''),
+    'Session: '+blankDash(sess.name),
     'Date: '+fDate(sess.created),
-    'Game System: '+(sess.system||''),
-    'Player Name: '+(sess.player||''),
-    'Character Name: '+(sess.charName||''),
-    'Session Note: '+(sess.note||''),
+    'Game System: '+blankDash(sess.system),
+    'Player Name: '+blankDash(sess.player),
+    'Character Name: '+blankDash(sess.charName),
+    'Session Note: '+blankDash(sess.note),
     'Total Rolls: '+sess.rolls.length,
     '---'
   ];
-  lines.push('date/time,dice count,dice type,modifier,roll value,dice values,miss?,label,note');
+  lines.push('date/time,notation,roll value,dice values,miss?,label,note');
   sess.rolls.forEach(r=>{
-    const diceVals=r.results.map(d=>d.dropped?'('+d.val+')':d.val).join('-');
-    const comment=r.comment||'';
+    const diceVals=r.results.map(d=>d.dropped?'('+d.val+')':d.val).join(':');
     const miss=r.miss?'Yes':'No';
-    const diceType=(DICE.find(d=>d.sides===r.sides)||{}).sym||('d'+r.sides);
-    lines.push(fDT(r.timestamp)+','+r.count+','+diceType+','+r.modifier+','+r.total+',' + '"'+diceVals+'"' + ',' + miss + ',' + '"'+(r.label||'Roll')+'"' + ',' + '"'+comment+'"');
+    lines.push(fDT(r.timestamp)+',' + '"'+blankDash(r.notation)+'"' + ','+r.total+',' + '"'+blankDash(diceVals)+'"' + ',' + miss + ',' + '"'+blankDash(r.label)+'"' + ',' + '"'+blankDash(r.comment)+'"');
   });
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain'}));
@@ -470,6 +492,41 @@ function deleteSession(id){
   toast('Session deleted');
 }
 
+/** The currently open field-help popup element, if any. */
+let activeHelpPopup=null;
+/** Closes the currently open field-help popup, if one is showing. */
+function closeFieldHelp(){
+  if(activeHelpPopup){activeHelpPopup.remove();activeHelpPopup=null;}
+}
+/**
+ * Shows a small popup with help text next to a clicked help icon (?). Tap/click again elsewhere to dismiss.
+ * @param {MouseEvent} ev - The click event on the help icon.
+ * @param {string} text - The help text to display.
+ */
+function showFieldHelp(ev,text){
+  ev.preventDefault();
+  ev.stopPropagation();
+  const reopening=activeHelpPopup&&activeHelpPopup.dataset.forIcon===String(ev.currentTarget._helpId);
+  closeFieldHelp();
+  if(reopening)return;
+  const p=document.createElement('div');
+  p.className='field-help-popup';
+  p.textContent=text;
+  document.body.appendChild(p);
+  const r=ev.currentTarget.getBoundingClientRect();
+  const pw=p.offsetWidth,ph=p.offsetHeight;
+  let left=Math.min(r.left,window.innerWidth-pw-8);
+  let top=r.bottom+6;
+  if(top+ph>window.innerHeight-8)top=r.top-ph-6;
+  p.style.left=Math.max(8,left)+'px';
+  p.style.top=Math.max(8,top)+'px';
+  ev.currentTarget._helpId=ev.currentTarget._helpId||genId();
+  p.dataset.forIcon=ev.currentTarget._helpId;
+  activeHelpPopup=p;
+}
+document.addEventListener('click',closeFieldHelp);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFieldHelp();});
+
 let toastT;
 /** Shows a transient toast notification with the given message. */
 function toast(msg){
@@ -481,9 +538,10 @@ function toast(msg){
 function addManualRoll(){
   const sess=S.sessions[S.currentSessionId];
   if(!sess){toast('No active session — create one first');return;}
-  const numDice=parseInt(document.getElementById('mr-count').value)||1;
-  const diceType=parseInt(document.getElementById('mr-type').value)||20;
-  const modifier=parseInt(document.getElementById('mr-mod').value)||0;
+  const notationRaw=document.getElementById('mr-notation').value.trim();
+  const parsed=parseDiceNotation(notationRaw);
+  if(!parsed){toast('Enter valid dice notation, e.g. 2d6+1');return;}
+  const {count:numDice,sides:diceType,modifier}=parsed;
   const totalRaw=document.getElementById('mr-total').value.trim();
   const indivStr=document.getElementById('mr-indiv').value.trim();
   const comment=document.getElementById('mr-comment').value.trim();
@@ -492,10 +550,10 @@ function addManualRoll(){
   if(!totalRaw){toast('Enter a total roll value');return;}
   const totalVal=parseInt(totalRaw);
   if(isNaN(totalVal)){toast('Total must be a number');return;}
-  const indivVals=indivStr?indivStr.split('-').map(v=>parseInt(v.trim())).filter(v=>!isNaN(v)):[];
+  const indivVals=parseIndivValues(indivStr);
+  if(indivVals===null){toast('Dice Values must be colon-separated, e.g. 4:9');return;}
   const results=indivVals.length>0?indivVals.map(v=>({val:v,kept:true,dropped:false})):[{val:totalVal-modifier,kept:true,dropped:false}];
-  const displayLabel=label||comment||(numDice+' d'+diceType);
-  const roll={id:genId(),timestamp:Date.now(),count:numDice,sides:diceType,modifier,total:totalVal,results,label:displayLabel,comment,miss,rollNote:'',mode:'none'};
+  const roll={id:genId(),timestamp:Date.now(),notation:notationRaw,count:numDice,sides:diceType,modifier,total:totalVal,results,label,comment,miss,rollNote:'',mode:'none'};
   sess.rolls.push(roll);
   if(sess.rolls.length>500)sess.rolls.shift();
   clearManualForm();updateHistory();updateStats();save();
@@ -504,9 +562,7 @@ function addManualRoll(){
 /** Resets the "Log Roll" form fields back to their defaults. */
 function clearManualForm(){
   ['mr-total','mr-indiv','mr-comment'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const c=document.getElementById('mr-count');if(c)c.value='1';
-  const t=document.getElementById('mr-type');if(t)t.value='20';
-  const m=document.getElementById('mr-mod');if(m)m.value='0';
+  const n=document.getElementById('mr-notation');if(n)n.value='';
   const l=document.getElementById('mr-label');if(l)l.value='';
   const miss=document.getElementById('mr-miss');if(miss)miss.checked=false;
 }
@@ -530,11 +586,9 @@ function editRollFull(rollId){
   const el=document.getElementById('hentry-'+rollId);
   if(!el)return;
   el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
-    <div style="display:flex;flex-direction:column;gap:2px;flex:0 0 54px"><label style="font-size:10px;color:var(--text3)"># Dice</label><input type="number" id="ef-cnt-${rollId}" value="${roll.count||1}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
-    <div style="display:flex;flex-direction:column;gap:2px;flex:0 0 54px"><label style="font-size:10px;color:var(--text3)">Die Type</label><input type="number" id="ef-typ-${rollId}" value="${roll.sides||20}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
-    <div style="display:flex;flex-direction:column;gap:2px;flex:0 0 54px"><label style="font-size:10px;color:var(--text3)">Modifier</label><input type="number" id="ef-mod-${rollId}" value="${roll.modifier||0}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;flex:0 0 100px"><label style="font-size:10px;color:var(--text3)">Dice Notation</label><input type="text" id="ef-notation-${rollId}" value="${esc(roll.notation||'')}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
     <div style="display:flex;flex-direction:column;gap:2px;flex:0 0 62px"><label style="font-size:10px;color:var(--text3)">Total</label><input type="number" id="ef-tot-${rollId}" value="${roll.total}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
-    <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:80px"><label style="font-size:10px;color:var(--text3)">Dice (dash-sep)</label><input type="text" id="ef-ind-${rollId}" value="${roll.results.map(d=>d.val).join('-')}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
+    <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:80px"><label style="font-size:10px;color:var(--text3)">Dice (colon-sep)</label><input type="text" id="ef-ind-${rollId}" value="${roll.results.map(d=>d.val).join(':')}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px"></div>
     <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:6px;flex:0 0 auto"><label for="ef-miss-${rollId}" style="font-size:10px;color:var(--text3)">Miss?</label><input type="checkbox" id="ef-miss-${rollId}"${roll.miss?' checked':''} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"></div>
     <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:120px"><label style="font-size:10px;color:var(--text3)">Label</label><select id="ef-lbl-${rollId}" style="width:100%;background:var(--bg4);border:1px solid var(--accent);border-radius:5px;color:var(--text);padding:3px 5px;font-size:12px">${skillOptions(roll.label)}</select></div>
   </div>
@@ -556,15 +610,26 @@ function saveRollFull(rollId){
   const g=id=>document.getElementById(id);
   const newTot=parseInt(g('ef-tot-'+rollId).value);
   if(!isNaN(newTot))roll.total=newTot;
-  roll.count=parseInt(g('ef-cnt-'+rollId).value)||roll.count;
-  roll.sides=parseInt(g('ef-typ-'+rollId).value)||roll.sides;
-  roll.modifier=parseInt(g('ef-mod-'+rollId).value)||0;
+  const notationRaw=g('ef-notation-'+rollId).value.trim();
+  const parsed=parseDiceNotation(notationRaw);
+  if(parsed){
+    roll.notation=notationRaw;
+    roll.count=parsed.count;
+    roll.sides=parsed.sides;
+    roll.modifier=parsed.modifier;
+  }else{
+    toast('Invalid dice notation — keeping previous value');
+  }
   const indiv=g('ef-ind-'+rollId).value.trim();
-  if(indiv){const vals=indiv.split('-').map(v=>parseInt(v.trim())).filter(v=>!isNaN(v));if(vals.length)roll.results=vals.map(v=>({val:v,kept:true,dropped:false}));}
+  if(indiv){
+    const vals=parseIndivValues(indiv);
+    if(vals===null){toast('Dice Values must be colon-separated, e.g. 4:9');}
+    else if(vals.length)roll.results=vals.map(v=>({val:v,kept:true,dropped:false}));
+  }
   const lbl=g('ef-lbl-'+rollId).value.trim();
   const cmt=g('ef-cmt-'+rollId).value.trim();
   roll.comment=cmt;
-  roll.label=lbl||cmt||(roll.count+' d'+roll.sides);
+  roll.label=lbl;
   roll.miss=g('ef-miss-'+rollId).checked;
   save();updateHistory();toast('Entry updated');
 }
