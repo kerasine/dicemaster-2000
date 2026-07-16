@@ -400,10 +400,10 @@
         <div>Hit Points (HP)</div><input type="text" id="hp_max" readonly><input type="number" id="hp_cur" data-field><button class="mini-btn" data-reset="hp_cur:hp_max">↺</button>
         <div>Willpower Points (WP)</div><input type="text" id="wp_max" readonly><input type="number" id="wp_cur" data-field><button class="mini-btn" data-reset="wp_cur:wp_max">↺</button>
         <div>Sanity Points (SAN)</div><input type="text" id="san_max" readonly><input type="number" id="san_cur" data-field><button class="mini-btn" data-reset="san_cur:san_max">↺</button>
-        <div>Breaking Point (BP)</div><input type="text" id="bp_calc" readonly><input type="number" id="bp_cur" data-field><button class="mini-btn" id="bpRecalcBtn" title="Recalculate: current SAN − POW">↺</button>
+        <div>Breaking Point (BP)</div><input type="text" id="bp_calc" readonly><input type="number" id="bp_cur" data-field><button class="mini-btn" id="bpRecalcBtn" title="Recalculate: max SAN − POW">↺</button>
       </div>
       <div style="font-size:10px;color:var(--muted);margin-top:6px;">
-        HP max = ⌈(STR+CON)/2⌉ &nbsp;·&nbsp; WP max = POW &nbsp;·&nbsp; SAN max = POW×5 &nbsp;·&nbsp; BP recalculates as current SAN − POW when you press ↺ (do this whenever SAN resets after hitting a Breaking Point).
+        HP max = ⌈(STR+CON)/2⌉ &nbsp;·&nbsp; WP max = POW &nbsp;·&nbsp; SAN max = POW×5 &nbsp;·&nbsp; BP = max SAN − POW.
       </div>
 
       <h3 class="subhead2" style="margin-top:18px;">13. Incidents of SAN Loss Without Going Insane</h3>
@@ -695,9 +695,7 @@ function recalcAll(){
   document.getElementById('wp_max').value = wpMax;
   document.getElementById('san_max').value = sanMax;
 
-  const sanCurEl = document.getElementById('san_cur');
-  const sanCur = sanCurEl.value === '' ? sanMax : (parseInt(sanCurEl.value)||0);
-  document.getElementById('bp_calc').value = (sanCur - pow);
+  document.getElementById('bp_calc').value = (sanMax - pow);
 }
 
 function wireStatRecalc(){
